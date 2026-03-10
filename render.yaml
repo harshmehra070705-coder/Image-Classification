@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: image-classification
+    runtime: python
+    buildCommand: |
+      apt-get update && apt-get install -y cmake g++ libboost-all-dev
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: gunicorn app:app

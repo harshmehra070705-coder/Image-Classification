@@ -1,5 +1,8 @@
 flask
+dlib==19.24.6
 face-recognition
+face-recognition-models
 opencv-python-headless
 numpy
+Pillow
 gunicorn
