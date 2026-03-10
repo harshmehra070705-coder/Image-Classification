@@ -1,0 +1,86 @@
+<!-- templates/gallery.html -->
+{% extends 'base.html' %}
+{% block title %}Gallery - Face Search App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">
+        <i class="fas fa-images"></i> Photo Gallery
+    </h1>
+    <p class="page-subtitle">
+        Saari uploaded photos yahan hain. Total: {{ photos|length }} photos
+    </p>
+
+    {% if photos %}
+    <div class="gallery-grid">
+        {% for photo in photos %}
+        <div class="gallery-card">
+            <div class="gallery-image">
+                <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" 
+                     alt="{{ photo.original_name }}"
+                     loading="lazy"
+                     onclick="openModal(this.src, '{{ photo.original_name }}')">
+            </div>
+            <div class="gallery-info">
+                <span class="gallery-name" title="{{ photo.original_name }}">
+                    {{ photo.original_name[:20] }}{% if photo.original_name|length > 20 %}...{% endif %}
+                </span>
+                <div class="gallery-meta">
+                    {% if photo.has_faces %}
+                        <span class="badge badge-success">
+                            <i class="fas fa-user"></i> {{ photo.face_count }}
+                        </span>
+                    {% else %}
+                        <span class="badge badge-warning">
+                            <i class="fas fa-user-slash"></i> 0
+                        </span>
+                    {% endif %}
+                    <form method="POST" action="{{ url_for('delete_photo_route', photo_id=photo.id) }}" 
+                          style="display:inline;"
+                          onsubmit="return confirm('Kya sach me delete karna hai?')">
+                        <button type="submit" class="btn-delete" title="Delete">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <i class="fas fa-images fa-4x"></i>
+        <h3>Abhi koi photo nahi hai!</h3>
+        <p>Photos upload karo pehle.</p>
+        <a href="{{ url_for('upload') }}" class="btn btn-primary">
+            <i class="fas fa-upload"></i> Upload Karo
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Image Modal -->
+<div class="modal" id="imageModal" onclick="closeModal()">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <img id="modalImage" src="" alt="">
+        <p id="modalCaption"></p>
+    </div>
+</div>
+
+<script>
+function openModal(src, name) {
+    document.getElementById('imageModal').style.display = 'flex';
+    document.getElementById('modalImage').src = src;
+    document.getElementById('modalCaption').textContent = name;
+}
+
+function closeModal() {
+    document.getElementById('imageModal').style.display = 'none';
+}
+
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,154 @@
+<!-- templates/search.html -->
+{% extends 'base.html' %}
+{% block title %}Face Search - Face Search App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">
+        <i class="fas fa-search"></i> Face Search Karo
+    </h1>
+    <p class="page-subtitle">
+        Jis person ko dhundhna hai uski ek photo daalo. 
+        Same face wali saari photos mil jayengi!
+    </p>
+
+    <!-- SEARCH FORM -->
+    <div class="search-section">
+        <form method="POST" enctype="multipart/form-data" id="searchForm">
+            <div class="search-upload-area" id="searchDropZone">
+                <div class="upload-icon">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+                <h3>Person ki photo daalo</h3>
+                <p>Jis person ko dhundhna hai uski clear face wali photo</p>
+                <input type="file" name="search_photo" id="searchFileInput" 
+                       accept="image/*" class="file-input">
+                <button type="button" class="btn btn-outline"
+                        onclick="document.getElementById('searchFileInput').click()">
+                    <i class="fas fa-image"></i> Photo Select Karo
+                </button>
+            </div>
+
+            <!-- Search Preview -->
+            <div class="search-preview" id="searchPreview" style="display:none;">
+                <img id="searchPreviewImg" src="" alt="Search Photo">
+                <button type="submit" class="btn btn-primary btn-lg" id="searchBtn">
+                    <i class="fas fa-search"></i> 
+                    <span id="searchBtnText">Search Karo!</span>
+                </button>
+            </div>
+        </form>
+
+        <!-- Loading -->
+        <div class="loading-overlay" id="searchLoading" style="display:none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <h3>Searching...</h3>
+                <p>Faces match ho rahe hain. Thoda wait karo...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH RESULTS -->
+    {% if results %}
+    <div class="results-section">
+        <h2>
+            <i class="fas fa-poll-h"></i> Search Results
+        </h2>
+        
+        <!-- Search Image -->
+        {% if results.search_image %}
+        <div class="search-query-display">
+            <h3>Search Photo:</h3>
+            <img src="{{ url_for('static', filename='uploads/' + results.search_image) }}" 
+                 alt="Search Photo" class="search-query-img">
+        </div>
+        {% endif %}
+
+        {% if results.results %}
+        <p class="results-summary">
+            🎯 <strong>{{ results.results|length }}</strong> matching photo(s) mili!
+        </p>
+        
+        <div class="results-grid">
+            {% for result in results.results %}
+            <div class="result-card">
+                <div class="result-image">
+                    <img src="{{ url_for('static', filename='uploads/' + result.filename) }}" 
+                         alt="{{ result.original_name }}"
+                         loading="lazy">
+                </div>
+                <div class="result-info">
+                    <span class="result-name">{{ result.original_name[:25] }}</span>
+                    <div class="confidence-bar">
+                        <div class="confidence-fill" 
+                             style="width: {{ result.confidence }}%; 
+                                    background: {% if result.confidence > 80 %}#4CAF50{% elif result.confidence > 60 %}#FF9800{% else %}#f44336{% endif %}">
+                        </div>
+                    </div>
+                    <span class="confidence-text">
+                        Match: <strong>{{ result.confidence }}%</strong>
+                    </span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="no-results">
+            <i class="fas fa-sad-tear fa-3x"></i>
+            <h3>Koi matching photo nahi mili!</h3>
+            <p>
+                Pehle photos upload karo ya different photo se try karo.
+            </p>
+            <a href="{{ url_for('upload') }}" class="btn btn-primary">
+                <i class="fas fa-upload"></i> Photos Upload Karo
+            </a>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+const searchFileInput = document.getElementById('searchFileInput');
+const searchPreview = document.getElementById('searchPreview');
+const searchPreviewImg = document.getElementById('searchPreviewImg');
+const searchForm = document.getElementById('searchForm');
+const searchDropZone = document.getElementById('searchDropZone');
+
+// Drag & Drop
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    searchDropZone.addEventListener(eventName, (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+    });
+});
+
+searchDropZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    searchFileInput.files = dt.files;
+    showSearchPreview(dt.files[0]);
+});
+
+searchFileInput.addEventListener('change', (e) => {
+    if (e.target.files[0]) {
+        showSearchPreview(e.target.files[0]);
+    }
+});
+
+function showSearchPreview(file) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        searchPreviewImg.src = e.target.result;
+        searchPreview.style.display = 'flex';
+    };
+    reader.readAsDataURL(file);
+}
+
+searchForm.addEventListener('submit', () => {
+    document.getElementById('searchLoading').style.display = 'flex';
+    document.getElementById('searchBtn').disabled = true;
+    document.getElementById('searchBtnText').textContent = 'Searching...';
+});
+</script>
+{% endblock %}

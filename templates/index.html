@@ -1,0 +1,93 @@
+<!-- templates/index.html -->
+{% extends 'base.html' %}
+{% block title %}Home - Face Search App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- HERO SECTION -->
+    <section class="hero">
+        <h1><i class="fas fa-camera-retro"></i> Face Search App</h1>
+        <p class="hero-subtitle">
+            Google Photos jaisa Face Recognition System<br>
+            Ek photo daalo, same face wali saari photos dhundho!
+        </p>
+        <div class="hero-buttons">
+            <a href="{{ url_for('upload') }}" class="btn btn-primary btn-lg">
+                <i class="fas fa-cloud-upload-alt"></i> Photos Upload Karo
+            </a>
+            <a href="{{ url_for('search') }}" class="btn btn-secondary btn-lg">
+                <i class="fas fa-search"></i> Face Search Karo
+            </a>
+        </div>
+    </section>
+
+    <!-- STATS SECTION -->
+    <section class="stats-section">
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-images"></i></div>
+                <div class="stat-number">{{ stats.total_photos }}</div>
+                <div class="stat-label">Total Photos</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-user-friends"></i></div>
+                <div class="stat-number">{{ stats.total_faces }}</div>
+                <div class="stat-label">Detected Faces</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon"><i class="fas fa-check-circle"></i></div>
+                <div class="stat-number">{{ stats.photos_with_faces }}</div>
+                <div class="stat-label">Photos with Faces</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-it-works">
+        <h2>Kaise Kaam Karta Hai?</h2>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3><i class="fas fa-upload"></i> Upload</h3>
+                <p>Apni photos upload karo. System automatically faces detect karega.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3><i class="fas fa-brain"></i> Process</h3>
+                <p>AI har face ka unique 128-point encoding banata hai.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3><i class="fas fa-search"></i> Search</h3>
+                <p>Kisi ki photo daalo, same face wali saari photos mil jayengi!</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- RECENT PHOTOS -->
+    {% if photos %}
+    <section class="recent-photos">
+        <h2><i class="fas fa-clock"></i> Recent Photos</h2>
+        <div class="photo-grid">
+            {% for photo in photos %}
+            <div class="photo-card">
+                <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" 
+                     alt="{{ photo.original_name }}"
+                     loading="lazy">
+                <div class="photo-info">
+                    <span class="photo-name">{{ photo.original_name[:20] }}</span>
+                    {% if photo.has_faces %}
+                        <span class="badge badge-success">
+                            <i class="fas fa-user"></i> {{ photo.face_count }} face(s)
+                        </span>
+                    {% else %}
+                        <span class="badge badge-warning">No face</span>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+</div>
+{% endblock %}

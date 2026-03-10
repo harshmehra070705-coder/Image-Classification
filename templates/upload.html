@@ -1,0 +1,150 @@
+<!-- templates/upload.html -->
+{% extends 'base.html' %}
+{% block title %}Upload Photos - Face Search App{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">
+        <i class="fas fa-cloud-upload-alt"></i> Photos Upload Karo
+    </h1>
+    <p class="page-subtitle">
+        Multiple photos ek saath upload kar sakte ho. 
+        System automatically faces detect karega.
+    </p>
+
+    <!-- UPLOAD FORM -->
+    <div class="upload-section">
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            <!-- Drag & Drop Area -->
+            <div class="upload-area" id="dropZone">
+                <div class="upload-icon">
+                    <i class="fas fa-cloud-upload-alt"></i>
+                </div>
+                <h3>Photos yahan drag & drop karo</h3>
+                <p>ya click karke select karo</p>
+                <input type="file" name="photos" id="fileInput" 
+                       multiple accept="image/*" class="file-input">
+                <button type="button" class="btn btn-outline" 
+                        onclick="document.getElementById('fileInput').click()">
+                    <i class="fas fa-folder-open"></i> Files Select Karo
+                </button>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-section" id="previewSection" style="display:none;">
+                <h3><i class="fas fa-eye"></i> Selected Photos Preview</h3>
+                <div class="preview-grid" id="previewGrid"></div>
+                <div class="upload-actions">
+                    <button type="submit" class="btn btn-primary btn-lg" id="uploadBtn">
+                        <i class="fas fa-upload"></i> 
+                        <span id="uploadBtnText">Upload & Process</span>
+                    </button>
+                    <button type="button" class="btn btn-secondary" onclick="clearFiles()">
+                        <i class="fas fa-trash"></i> Clear All
+                    </button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Loading Indicator -->
+        <div class="loading-overlay" id="loadingOverlay" style="display:none;">
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <h3>Processing...</h3>
+                <p>Photos upload aur faces detect ho rahe hain. Wait karo...</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- TIPS -->
+    <div class="tips-section">
+        <h3><i class="fas fa-lightbulb"></i> Tips</h3>
+        <ul>
+            <li>Clear face wali photos upload karo - better detection hogi</li>
+            <li>JPG, PNG, GIF, BMP formats supported hain</li>
+            <li>Maximum file size: 16MB per photo</li>
+            <li>Multiple photos ek saath select kar sakte ho</li>
+            <li>Acchi lighting wali photos se better results aate hain</li>
+        </ul>
+    </div>
+</div>
+
+<script>
+// Drag & Drop functionality
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const previewSection = document.getElementById('previewSection');
+const previewGrid = document.getElementById('previewGrid');
+const uploadForm = document.getElementById('uploadForm');
+
+// Drag events
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.add('drag-over'));
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, () => dropZone.classList.remove('drag-over'));
+});
+
+// Drop handler
+dropZone.addEventListener('drop', (e) => {
+    const dt = e.dataTransfer;
+    fileInput.files = dt.files;
+    showPreviews(dt.files);
+});
+
+// File input change
+fileInput.addEventListener('change', (e) => {
+    showPreviews(e.target.files);
+});
+
+// Show preview
+function showPreviews(files) {
+    if (files.length === 0) return;
+    
+    previewSection.style.display = 'block';
+    previewGrid.innerHTML = '';
+    
+    document.getElementById('uploadBtnText').textContent = 
+        `Upload ${files.length} Photo(s)`;
+    
+    Array.from(files).forEach((file, index) => {
+        if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const div = document.createElement('div');
+                div.className = 'preview-item';
+                div.innerHTML = `
+                    <img src="${e.target.result}" alt="${file.name}">
+                    <span class="preview-name">${file.name.substring(0, 15)}...</span>
+                    <span class="preview-size">${(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                `;
+                previewGrid.appendChild(div);
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+}
+
+function clearFiles() {
+    fileInput.value = '';
+    previewSection.style.display = 'none';
+    previewGrid.innerHTML = '';
+}
+
+// Form submit - show loading
+uploadForm.addEventListener('submit', () => {
+    document.getElementById('loadingOverlay').style.display = 'flex';
+    document.getElementById('uploadBtn').disabled = true;
+});
+</script>
+{% endblock %}
